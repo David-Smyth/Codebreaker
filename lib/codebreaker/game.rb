@@ -1,7 +1,8 @@
 module Codebreaker 
   class Game
-    def initialize(output)
+    def initialize(output, debug = false)
       @output = output
+      @debug = debug
     end
     def start(secret)
       @secret = secret
@@ -11,16 +12,20 @@ module Codebreaker
     def guess(guess)
       guess.strip!
       return if invalid?(guess)
-      plusses = ""
-      minuses = ""
-      guess.chars.to_a.each_with_index do |c,i|
-        if exact_match? c, i
-          plusses << "+"
-        elsif any_match? c
-          minuses << "-"
+      secret = @secret.dup
+      plusses = ''
+      minuses = ''
+      guess.chars.each_with_index do |c,i|
+        if exact_match? c, i, secret
+          plusses << '+'
+          secret[i] = 'X'
+        elsif any_match? c, secret
+          minuses << '-'
+          secret.sub!(c,'Y')
         end
       end
       @output.puts "#{plusses}#{minuses}"
+      @output.puts "#{secret}" if @debug
     end
     def invalid?(guess)
       if guess =~ /\s/
@@ -36,11 +41,11 @@ module Codebreaker
       return false
     end
 
-    def exact_match?(character, index)
-      character == @secret[index]
+    def exact_match?(character, index, secret)
+      character == secret[index]
     end
-    def any_match?(character)
-      @secret.include? character
+    def any_match?(character, secret)
+      secret.include? character
     end
   end
 end
