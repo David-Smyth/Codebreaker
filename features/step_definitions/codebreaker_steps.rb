@@ -35,3 +35,21 @@ Then(/^the mark should be "(.*?)"$/) do |mark|
   expect(fout.messages).to include(mark)
 end
 
+When(/^I provide an invalid "(.*?)"$/) do |guess|
+  @game = Codebreaker::Game.new(fout)
+  @game.start('1234')
+  @game.guess(guess)
+end
+
+Then(/^the response should be "(.*?)"Guess must be exactly (\d+) digits"(.*?)"$/) do |_, _, _|
+  expect(fout.messages).to include("Guess must be exactly 4 digits")
+end
+
+Then(/^the response should be "(.*?)"Guess must be only (\d+) digits, no letters"(.*?)"$/) do |_, _, _|
+  expect(fout.messages).to include("Guess must be only 4 digits, no letters")
+end
+
+Then(/^the response should be "(.*?)"Guess must be (\d+) digits, no whitespace"(.*?)"$/) do |_, _, _|
+  expect(fout.messages).to include("Guess must be 4 digits, no whitespace")
+end
+
