@@ -5,28 +5,41 @@ module Codebreaker
       @debug = debug
     end
     def start(secret)
-      @secret = secret
+      @secret = secret.strip
       @output.puts "Welcome to Codebreaker!"
       @output.puts "Enter guess:"
     end
     def guess(guess)
-      guess.strip!
+      guesser = Guesser.new @output, @debug
+      guesser.guess @secret, guess.strip
+    end
+  end
+
+  class Guesser
+    def initialize(output, debug = false)
+      @output = output
+      @debug = debug
+    end
+
+    def guess(secret,guess)
       return if invalid?(guess)
-      secret = @secret.dup
+      @secret = secret
+      @guess  = guess
       plusses = ''
       minuses = ''
-      guess.chars.each_with_index do |c,i|
-        if exact_match? c, i, secret
+      @guess.chars.each_with_index do |c,i|
+        if exact_match? c, i
           plusses << '+'
-          secret[i] = 'X'
-        elsif any_match? c, secret
+          @secret[i] = 'X'
+        elsif any_match? c
           minuses << '-'
-          secret.sub!(c,'Y')
+          @secret.sub!(c,'Y')
         end
       end
       @output.puts "#{plusses}#{minuses}"
-      @output.puts "#{secret}" if @debug
+      @output.puts "#{@secret}" if @debug
     end
+
     def invalid?(guess)
       if guess =~ /\s/
         @output.puts "Guess must be 4 digits, no whitespace"
@@ -41,11 +54,12 @@ module Codebreaker
       return false
     end
 
-    def exact_match?(character, index, secret)
-      character == secret[index]
+    def exact_match?(character, index)
+      character == @secret[index]
     end
-    def any_match?(character, secret)
-      secret.include? character
+
+    def any_match?(character)
+      @secret.include? character
     end
   end
 end
